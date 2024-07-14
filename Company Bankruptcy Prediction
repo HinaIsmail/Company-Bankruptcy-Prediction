@@ -1,0 +1,89 @@
+# This Python 3 environment comes with many helpful analytics libraries installed
+# It is defined by the kaggle/python Docker image: https://github.com/kaggle/docker-python
+# For example, here's several helpful packages to load
+
+import numpy as np # linear algebra
+import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
+
+# Input data files are available in the read-only "../input/" directory
+# For example, running this (by clicking run or pressing Shift+Enter) will list all files under the input directory
+
+import os
+for dirname, _, filenames in os.walk('/kaggle/input'):
+    for filename in filenames:
+        print(os.path.join(dirname, filename))
+
+# You can write up to 20GB to the current directory (/kaggle/working/) that gets preserved as output when you create a version using "Save & Run All" 
+# You can also write temporary files to /kaggle/temp/, but they won't be saved outside of the current session
+import numpy as np 
+import pandas as pd 
+import matplotlib.pyplot as plt 
+import seaborn as sns
+import warnings 
+warnings.filterwarnings("ignore")
+# Read the dataset
+df = pd.read_csv("/kaggle/input/company-bankruptcy-prediction/data.csv")
+df
+df.columns = [c.replace(' ', '_') for c in df.columns]
+df.head()
+df.info()
+df.describe()
+df.isnull().sum()
+df.isnull()
+df.duplicated().sum()
+df["Bankrupt?"].value_counts(normalize=True)
+df.shape
+df.columns
+(df.isna().sum() > 0).sum()
+df['Bankrupt?'].value_counts(normalize= True).plot(kind= 'bar')
+plt.xlabel("Bankrupt classes")
+plt.ylabel("Frequancy")
+plt.title("Class balance");
+Now we show the distributions of the "_Net_Income_to_Total_Assets" column for both groups in the "bankrupt" column
+sns.boxenplot(x="Bankrupt?" , y="_Net_Income_to_Total_Assets" , data=df)
+plt.xlabel("Bankrupt classes")
+plt.ylabel("Net Income to Total Assets")
+plt.title("Distribution of Profit/ Net Income Ratio, by Class");
+df['_Net_Income_to_Total_Assets'].describe()
+**We create a histogram to check whether the distrbution is skewed significantly or not**
+df["_Net_Income_to_Total_Assets"].hist()
+plt.xlabel("Net Income to Total Assets")
+plt.ylabel("count")
+plt.title("Distrbution of Net Income to Total Assets Ratio");
+q1 , q9 = df['_Net_Income_to_Total_Assets'].quantile([0.1,0.9])
+mask = df["_Net_Income_to_Total_Assets"].between(q1 , q9)
+sns.boxplot(x='Bankrupt?' , y='_Net_Income_to_Total_Assets', data= df[mask])
+plt.xlabel("Bankrupt")
+plt.ylabel(" Net Income to Total Assets")
+plt.title("Distribution of Net Income to Total Assets Ratio, by Bankruptcy Status");
+corr = df.drop(columns=['Bankrupt?']).corr()
+sns.heatmap(corr);
+# Create correlation matrix
+corr_matrix = df.corr()
+
+# Generate the heatmap
+plt.figure(figsize=(30, 25))
+sns.heatmap(corr_matrix, cmap="coolwarm")
+plt.title("Correlation Heatmap")
+plt.show()
+corr_features = corr_matrix["Bankrupt?"].abs() >= 0.15
+corr_features.value_counts()
+feature_names = list(corr_features[corr_features].index)
+feature_names
+# Create a figure with subplots
+fig, axes = plt.subplots(len(feature_names), 2, figsize=(16, len(feature_names) * 4))
+
+for i, feature in enumerate(feature_names):
+    # Plot with original feature
+    sns.boxenplot(x="Bankrupt?", y=feature, data=df, ax=axes[i, 0])
+    axes[i, 0].set_title(f'Original {feature}')
+
+    # Plot after removing outliers in feature
+    q1, q9 = df[feature].quantile([0.1, 0.9])
+    mask = df[feature].between(q1, q9)
+    sns.boxplot(x="Bankrupt?", y=feature, data=df[mask], ax=axes[i, 1])
+    axes[i, 1].set_title(f'{feature} without Outliers')
+
+# Adjust layout
+plt.tight_layout()
+plt.show()
